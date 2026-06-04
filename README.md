@@ -10,9 +10,10 @@ Trabalho da cadeira de Arquitetura de computadores. O trabalho consiste em fazer
 
 ## Como usar?
   No seu terminal, vá para a pasta que contém os arquivos. E siga as instruções:
-  1. Para criar o .bin
-     a) Com o seu arquivo codigo.asm em assembly, rode
-         python3 assembler_diego.py codigo.asm codigo.bin
-  2. Para traduzir o codigo.bin
-    a) Com seu arquivo codigo.bin, rode
-        pytohn3 processor.py codigo.bin 
+  1. Para criar o .bin com o seu arquivo codigo.asm em assembly, rode
+
+    python3 assembler_diego.py codigo.asm codigo.bin
+     
+  3. Para traduzir o codigo.bin, rode
+
+    pytohn3 processor.py codigo.bin 
