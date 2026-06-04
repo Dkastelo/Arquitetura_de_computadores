@@ -17,3 +17,4 @@ Trabalho da cadeira de Arquitetura de computadores. O trabalho consiste em fazer
   3. Para traduzir o codigo.bin, rode
 
     pytohn3 processor.py codigo.bin 
+  Vai ser printado no terminal o resultado e o número de ciclos
