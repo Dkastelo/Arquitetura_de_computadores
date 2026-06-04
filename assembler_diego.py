@@ -1,5 +1,3 @@
-import sys
-
 PROLOGUE_SIZE = 4
 
 class Assembler:
@@ -10,7 +8,7 @@ class Assembler:
         }
         self.lines = []       # armazena as linhas limpas
         self.labels = {}      # tabela de Símbolos ('nome': endereco_byte)
-        self.binary_data = bytearray([0]) 
+        self.binary_data = bytearray() 
 
     def open_archive(self, file_path):
         try:
@@ -165,9 +163,18 @@ class Assembler:
         self.second_look(destination_path)
 
 
-if (len(sys.argv) < 3):
-    print("digite: python3 assembler_diego.py arquivo.asm destino.bin")
-else:
-    asm = Assembler()
-    if (asm.open_archive(sys.argv[1])):
-        asm.run(sys.argv[2])
+if (__name__ == "__main__"):
+    arquivo_origem = input("Digite o nome do arquivo .asm (ex: programa.asm): ").strip()
+    
+    if not arquivo_origem:
+        print("Nenhum arquivo de origem informado. Encerrando.")
+    else:
+        arquivo_destino = input("Digite o nome do arquivo de destino (ex: saida.bin): ").strip()
+        
+        if not arquivo_destino:
+            arquivo_destino = "out.bin"
+            print(f"Nenhum destino informado. Usando padrão: {arquivo_destino}")
+            
+        asm = Assembler()
+        if asm.open_archive(arquivo_origem):
+            asm.run(arquivo_destino)
