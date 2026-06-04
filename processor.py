@@ -25,62 +25,71 @@ firmware = array('L',[0]) * 512
 
 #0: INIT
 firmware[0] = 0b000000000_100_00110101_001000_001_001 
-              #BUS_C = PC + 1; PC = BUS_C; MBR = memory.read_byte(PC) (FETCH); GOTO MBR.
-              
+#BUS_C = PC + 1; PC = BUS_C; MBR = memory.read_byte(PC) (FETCH); GOTO MBR.
+
+
 #2: X = X + mem[address]
-# ! avança o PC para ler o endereço da variavel e joga o MBR anterior pro MAR
 firmware[2] = 0b000000011_000_00110101_101000_001_001
-              # BUS_C = PC + 1; PC = MAR = BUS_C; MBR = read_byte; GOTO 3
+# PC=PC+1; MAR=PC; MBR=read(PC)
 
-# ! lê a Word da RAM e já joga o valor direto para dentro do registrador H
-firmware[3] = 0b000000101_000_00010100_000001_010_010
-              # MAR = MBR; H = MDR = memory.read_word(MAR); GOTO 5
+firmware[3] = 0b000000100_000_00010100_100000_010_010
+# MAR=MBR; MDR=read_word(MAR)
 
-# ! executa a soma na ULA (H + X), guarda em X e já faz o FETCH da próxima instrução!
-firmware[5] = 0b000000000_100_00111100_000100_001_011             
-              # BUS_C = H + X; X = BUS_C; MBR = read_byte; GOTO MBR (Volta ao ciclo 0)
+firmware[4] = firmware[4] = 0b000000101_000_00010100_000001_000_000
+# H = MDR
+
+firmware[5] = 0b011001000_000_00111100_000100_000_011     
+# X = H + X; GOTO 200
 
 
 #6: memory[address] = X
-# ! avança o PC para pegar o endereço de destino e joga o MBR atual no MAR
 firmware[6] = 0b000000111_000_00110101_101000_001_001
-              # BUS_C = PC + 1; PC = MAR = BUS_C; MBR = read_byte; GOTO 7
+# PC=PC+1; MAR=PC; MBR=read(PC)
 
-# ! coloca o valor de X no MDR, manda disparar a escrita física na RAM e já faz o FETCH!
-firmware[7] = 0b000000000_100_00010100_010000_100_011
-              # MAR = MBR; MDR = X; memory.write_word(MAR, MDR); FETCH; GOTO MBR
+firmware[7] = 0b000001000_000_00010100_100000_000_010
+# MAR = MBR
 
+firmware[8] = 0b011001000_000_00010100_010000_100_011
+# MDR = X; write_word; GOTO 200
 
 #9: GOTO address
-# ! carrega o endereço de destino do desvio direto no PC e já faz o FETCH da nova posição
 firmware[9]  = 0b000001010_000_00110101_001000_001_001
-              # PC = PC + 1; MBR = read_byte; GOTO 10
+# PC = PC + 1; MBR = read_byte; GOTO 10
 
-# ! atualiza o PC com o destino que estava no MBR e faz o desvio imediato
 firmware[10] = 0b000000000_100_00010100_001000_001_010
-              # PC = MBR; FETCH; GOTO MBR
+# PC = MBR; FETCH; GOTO MBR
 
 
 #11: IF X == 0 GOTO address
 firmware[11] =  0b000001100_001_00010100_000000_000_011
-                #BUS_C = X; IF ALU == 0 GOTO 268 ELSE GOTO 12
-firmware[12] =  0b000000000_100_00110101_001000_001_001
-                # FALSO: PC = PC + 1; FETCH; GOTO MBR
+#BUS_C = X; IF ALU == 0 GOTO 268 ELSE GOTO 12
+
+firmware[12] = 0b011001000_000_00110101_001000_000_001
+# FALSO: PC = PC + 1; FETCH; GOTO MBR
+
 firmware[268] = 0b000001001_000_00000000_000000_000_000
-                # VERDADEIRO
+# VERDADEIRO
 
 #13: X = X - mem[address]
 firmware[13] = 0b000001110_000_00110101_101000_001_001
-               # PC = PC + 1; PC = MAR = BUS_C; MBR = read_byte; GOTO 14
-firmware[14] = 0b000001111_000_00010100_000001_010_010
-               # MAR = MBR; H = MDR = memory.read_word(MAR); GOTO 16
-firmware[16] = 0b000000000_100_00111111_000100_001_011
-               # BUS_C = X - H; X = BUS_C; MBR = read_byte; GOTO MBR
+# PC=PC+1; MAR=PC; MBR=read(PC)
+
+firmware[14] = 0b000001111_000_00010100_100000_010_010
+# MAR=MBR; MDR=read_word(MAR)
+
+firmware[15] = 0b000010000_000_00010100_000001_000_000
+# H = MDR
+
+firmware[16] = 0b011001000_000_00111111_000100_000_011
+# X = X - H; GOTO 200
 
 #255: HALT
 firmware[255] = 0b00000000000000000000000000000000
-                #HALT
+#HALT
 
+
+firmware[200] = 0b000000000_100_00110101_001000_001_001
+# PC = PC + 1; FETCH; GOTO MBR
 
 
 def read_regs(reg_num):
@@ -223,7 +232,7 @@ def step():
    return True
    
 
-if __name__ == "__main__":
+if (__name__ == "__main__"):
     import sys
     # Importa a memória do seu projeto (conforme exigido pelo professor)
     import memory 

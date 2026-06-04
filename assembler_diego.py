@@ -1,5 +1,7 @@
 import sys
 
+PROLOGUE_SIZE = 4
+
 class Assembler:
     def __init__(self):
         self.instruction_set = {
@@ -8,7 +10,7 @@ class Assembler:
         }
         self.lines = []       # armazena as linhas limpas
         self.labels = {}      # tabela de Símbolos ('nome': endereco_byte)
-        self.binary_data = bytearray([0]) # começa com o byte 0 padrão
+        self.binary_data = bytearray([0]) 
 
     def open_archive(self, file_path):
         try:
@@ -31,9 +33,19 @@ class Assembler:
             return 4
         else:
             return 0
+    
+    def _find_first_code_label(self):
+        for line in self.lines:
+            if (line[0] not in self.instruction_set) and (line[0] not in ('wb', 'ww')):
+                if (len(line) > 1) and (line[1] not in ('wb', 'ww')):
+                    return line[0]
+            elif line[0] in self.instruction_set:
+                return None
+        return None
+
 
     def first_look(self):
-        actual_adress = 1 # já existe um byte 0 padrão na posição 0
+        actual_adress = PROLOGUE_SIZE # já existe um byte 0 padrão na posição 0
 
         for line in self.lines:
             if (line[0] in self.instruction_set) or line[0] in ['wb', 'ww']:
@@ -100,6 +112,17 @@ class Assembler:
             'ww'   : self.encode_ww
         }
 
+        first_code = self._find_first_code_label()
+        if (first_code is not None):
+            code_addr = self.labels[first_code]
+            self.binary_data.append(self.instruction_set['goto'])
+            self.binary_data.append(code_addr)
+            self.binary_data.append(0x00)
+            self.binary_data.append(0x00)
+        else:
+            for k in self.labels:
+                self.labels[k] -= PROLOGUE_SIZE
+
         for tokens in self.lines:
             if (tokens[0] in self.instruction_set) or (tokens[0] in ['wb', 'ww']):
                 inst = tokens[0]
@@ -116,11 +139,11 @@ class Assembler:
             elif (inst in routes):
                 instruction_bytes = routes[inst](inst, ops)
                 if (not instruction_bytes):
-                    print(f"Erro de sintaxe crítico na instrução {inst} {ops}")
+                    print(f"erro de sintaxe na instrução {inst} {ops}")
                     return False
                 self.binary_data.extend(instruction_bytes)
             else:
-                print(f'O Assembler não soube oq fazer aqq {inst}')
+                print(f'o assembler não soube oq fazer aqq {inst}')
                 return False
         
         try:
@@ -129,13 +152,13 @@ class Assembler:
             print('sucesso! arquivo gerado')
             return True
         except Exception as e:
-            print(f'Erro ao gravar arquivo final: {e}')
+            print(f'erro ao gravar arquivo final: {e}')
             return False
 
 
     def run(self, destination_path):
         # ? *SE PA EU APAGO ISSO NE*
-        print(f"Linhas carregadas para processamento: {len(self.lines)}")
+        print(f"linhas carregadas para processamento: {len(self.lines)}")
         
         self.first_look()
         print('iniciando segunda olhada')
