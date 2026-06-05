@@ -3,8 +3,16 @@ PROLOGUE_SIZE = 4
 class Assembler:
     def __init__(self):
         self.instruction_set = {
-            'add': 0x02, 'sub': 0x0D, 'goto': 0x09, 
-            'mov': 0x06, 'jz': 0x0B, 'halt': 0xFF
+            'ld'   :  0x01, 
+            'add'  :  0x02, 
+            'sub'  :  0x0D, 
+            'goto' :  0x09, 
+            'mov'  :  0x06,  
+            'jz'   :  0x0B, 
+            'halt' :  0xFF,
+            'jn'   :  0x11, 
+            'mul'  :  0x14,  
+            'mod'  :  0x19
         }
         self.lines = []       # armazena as linhas limpas
         self.labels = {}      # tabela de Símbolos ('nome': endereco_byte)
@@ -25,7 +33,7 @@ class Assembler:
     def calculate_instruction_size(self, inst, ops):
         if (inst == 'halt') or (inst == 'wb'):
             return 1
-        elif (inst in ['add', 'sub', 'mov', 'jz', 'goto']):
+        elif (inst in ['ld', 'add', 'sub', 'mov', 'jz', 'goto', 'jn', 'mul', 'mod']):
             return 2
         elif (inst == 'ww'):
             return 4
@@ -102,11 +110,15 @@ class Assembler:
 
     def second_look(self, destination_path):
         routes = {
+            'ld'   : self.encode_math,
             'add'  : self.encode_math,
             'sub'  : self.encode_math,
             'mov'  : self.encode_math,
             'goto' : self.encode_jump,
             'jz'   : self.encode_jump,
+            'jn'   : self.encode_jump,
+            'mul'  : self.encode_math,
+            'mod'  : self.encode_math,
             'ww'   : self.encode_ww
         }
 
@@ -164,6 +176,7 @@ class Assembler:
 
 
 if (__name__ == "__main__"):
+    print('\n')
     arquivo_origem = input("Digite o nome do arquivo .asm (ex: programa.asm): ").strip()
     
     if not arquivo_origem:
