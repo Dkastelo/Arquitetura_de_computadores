@@ -24,18 +24,18 @@ firmware = array('L',[0]) * 512
 #0: INIT
 firmware[0] = 0b000000000_100_00110101_001000_001_001 
 
-#1: X = mem[address] (NOVA INSTRUÇÃO DE LOAD) -> Opcode 0x01
+#1: X = mem[address] (ld) -> Opcode 0x01
 firmware[1] = 0b000011101_000_00110101_101000_001_001
 firmware[29] = 0b000011110_000_00010100_100000_010_010
 firmware[30] = 0b011001000_000_00010100_000100_000_000
 
-#2: X = X + mem[address]
+#2: X = X + mem[address] (add)
 firmware[2] = 0b000000011_000_00110101_101000_001_001
 firmware[3] = 0b000000100_000_00010100_100000_010_010
 firmware[4] = 0b000000101_000_00010100_000001_000_000
 firmware[5] = 0b011001000_000_00111100_000100_000_011     
 
-#6: memory[address] = X
+#6: memory[address] = X (mov)
 firmware[6] = 0b000000111_000_00110101_101000_001_001
 firmware[7] = 0b000001000_000_00010100_100000_000_010
 firmware[8] = 0b011001000_000_00010100_010000_100_011
@@ -44,12 +44,12 @@ firmware[8] = 0b011001000_000_00010100_010000_100_011
 firmware[9]  = 0b000001010_000_00110101_001000_001_001
 firmware[10] = 0b000000000_100_00010100_001000_001_010
 
-#11: IF X == 0 GOTO address
+#11: IF X == 0 GOTO address (jz)
 firmware[11] =  0b000001100_001_00010100_000000_000_011
 firmware[12] = 0b011001000_000_00110101_001000_000_001
 firmware[268] = 0b000001001_000_00000000_000000_000_000
 
-#13: X = X - mem[address]
+#13: X = X - mem[address] (sub)
 firmware[13] = 0b000001110_000_00110101_101000_001_001
 firmware[14] = 0b000001111_000_00010100_100000_010_010
 firmware[15] = 0b000010000_000_00010100_000001_000_000
@@ -60,18 +60,6 @@ firmware[17] = 0b000010010_010_00010100_000000_000_011
 firmware[18] = 0b011001000_000_00110101_001000_000_001
 firmware[274] = 0b000001001_000_00000000_000000_000_000
 
-#20: X = X * mem[address] (mul)
-firmware[20] = 0b000010101_000_00110101_101000_001_001
-firmware[21] = 0b000010110_000_00010100_100000_010_010
-firmware[22] = 0b000010111_000_00010100_000001_000_000
-firmware[23] = 0b011001000_000_00100000_000100_000_011
-
-#25: X = X % mem[address] (mod)
-firmware[25] = 0b000011010_000_00110101_101000_001_001
-firmware[26] = 0b000011011_000_00010100_100000_010_010
-firmware[27] = 0b000011100_000_00010100_000001_000_000
-firmware[28] = 0b011001000_000_00100001_000100_000_011
-
 #255: HALT
 firmware[255] = 0b00000000000000000000000000000000
 
@@ -81,18 +69,12 @@ def read_regs(reg_num):
    global MDR, PC, MBR, X, Y, H, BUS_A, BUS_B
    
    BUS_A = H
-   if reg_num == 0:
-      BUS_B = MDR
-   elif reg_num == 1:
-      BUS_B = PC
-   elif reg_num == 2:
-      BUS_B = MBR
-   elif reg_num == 3:
-      BUS_B = X
-   elif reg_num == 4:
-      BUS_B = Y
-   else:
-      BUS_B = 0
+   if reg_num == 0: BUS_B = MDR
+   elif reg_num == 1: BUS_B = PC
+   elif reg_num == 2: BUS_B = MBR
+   elif reg_num == 3: BUS_B = X
+   elif reg_num == 4: BUS_B = Y
+   else: BUS_B = 0
 
 def write_regs(reg_bits):
    global MAR, MDR, PC, X, Y, H, BUS_C
@@ -131,18 +113,10 @@ def alu(control_bits):
    elif control_bits == 0b010000: o = 0
    elif control_bits == 0b110001: o = 1
    elif control_bits == 0b110010: o = -1
-   elif control_bits == 0b100000: o = b * a
-   elif control_bits == 0b100001:
-      if a != 0: o = b % a
-      else: o = 0
 
-   if o == 0:
-      N = 0
-      Z = 1
-   else:
-      N = 1 if o < 0 else 0
-      Z = 0
-
+   N = (o >> 31) & 1
+   Z = int(not o)
+   
    if shift_bits == 0b01: o = o << 1
    elif shift_bits == 0b10: o = o >> 1
    elif shift_bits == 0b11: o = o << 8
@@ -182,8 +156,7 @@ def step():
 if __name__ == "__main__":
    import memory 
    
-   print('\n')
-   print("=== Simulador do Processador ===")
+   print("\n=== Simulador do Processador ===")
    arquivo_bin = input("Digite o nome do arquivo .bin gerado pelo assembler (ex: out.bin): ").strip()
    
    if not arquivo_bin:
@@ -205,5 +178,4 @@ if __name__ == "__main__":
       print('\n')
       
    except FileNotFoundError:
-      print(f"Erro: Arquivo '{arquivo_bin}' não encontrado.")
-      print('\n')
+      print(f"Erro: Arquivo '{arquivo_bin}' não encontrado.\n")

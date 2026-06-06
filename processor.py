@@ -44,7 +44,7 @@ firmware[8] = 0b011001000_000_00010100_010000_100_011
 firmware[9]  = 0b000001010_000_00110101_001000_001_001
 firmware[10] = 0b000000000_100_00010100_001000_001_010
 
-#11: IF X == 0 GOTO address
+
 firmware[11] =  0b000001100_001_00010100_000000_000_011
 firmware[12] = 0b011001000_000_00110101_001000_000_001
 firmware[268] = 0b000001001_000_00000000_000000_000_000
@@ -55,12 +55,11 @@ firmware[14] = 0b000001111_000_00010100_100000_010_010
 firmware[15] = 0b000010000_000_00010100_000001_000_000
 firmware[16] = 0b011001000_000_00111111_000100_000_011
 
-#17: IF X < 0 GOTO address (jn)
 firmware[17] = 0b000010010_010_00010100_000000_000_011
 firmware[18] = 0b011001000_000_00110101_001000_000_001
 firmware[274] = 0b000001001_000_00000000_000000_000_000
 
-#20: X = X * mem[address] (mul)
+
 firmware[20] = 0b000010101_000_00110101_101000_001_001
 firmware[21] = 0b000010110_000_00010100_100000_010_010
 firmware[22] = 0b000010111_000_00010100_000001_000_000
@@ -131,24 +130,16 @@ def alu(control_bits):
    elif control_bits == 0b010000: o = 0
    elif control_bits == 0b110001: o = 1
    elif control_bits == 0b110010: o = -1
-   elif control_bits == 0b100000: o = b * a
-   elif control_bits == 0b100001:
-      if a != 0: o = b % a
-      else: o = 0
 
-   if o == 0:
-      N = 0
-      Z = 1
-   else:
-      N = 1 if o < 0 else 0
-      Z = 0
-
+   N = (o >> 31) & 1
+   Z = int(not o)
+   
    if shift_bits == 0b01: o = o << 1
    elif shift_bits == 0b10: o = o >> 1
    elif shift_bits == 0b11: o = o << 8
 
    BUS_C = o
-    
+
 def next_instruction(nextadd, jam):
    global MPC
    if jam == 0b000:
