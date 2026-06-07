@@ -58,6 +58,14 @@ Trabalho da cadeira de Arquitetura de computadores. O trabalho consiste em fazer
   
   2. Para traduzir o codigo.bin:
 
-    pytohn3 simulator.py 
+    python3 simulator.py 
     
   O programa vai pedir o nome do arquivo .bin e logo em seguida printar o o número de ciclos utilizados e o resultado final do programa
+
+## Como usar o computadorv0.py?
+No seu terminal, vá para a pasta que contém os arquivos. E siga as instruções.
+  1. Para ver o valor das words 0, 1, 2 e 3 antes e depois do processamento, além do número de ciclos de acordo com o clock.py, escreva no terminal:
+
+    python3 computadorv0.py arquivo.bin
+
+  O computador irá imprimir no terminal o valor das words antes e depois, além do número de passos
