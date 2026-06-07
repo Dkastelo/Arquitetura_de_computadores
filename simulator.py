@@ -122,7 +122,7 @@ def alu(control_bits):
    elif shift_bits == 0b11: o = o << 8
 
    BUS_C = o
-    
+
 def next_instruction(nextadd, jam):
    global MPC
    if jam == 0b000:
@@ -169,6 +169,11 @@ if __name__ == "__main__":
          for i, b in enumerate(binary_data):
                memory.write_byte(i, b)
 
+      print(f">>> DETETIVE: O valor que está na Word 0 é: {memory.read_word(0)}")
+      print(f">>> DETETIVE: O valor que está na Word 1 é: {memory.read_word(1)}")
+      print(f">>> DETETIVE: O valor que está na Word 2 é: {memory.read_word(2)}")
+      print(f">>> DETETIVE: O valor que está na Word 3 é: {memory.read_word(3)}")
+   
       ciclos = 0
       while step():
          ciclos += 1
